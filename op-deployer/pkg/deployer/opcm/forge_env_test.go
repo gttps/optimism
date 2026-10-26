@@ -48,7 +48,7 @@ printf '== Return ==\n0: bytes 0x\n'
 	require.NoError(t, err)
 	privateKey := hexutil.Encode(crypto.FromECDSA(key))
 	env := &ForgeEnv{Client: client, Context: context.Background(), L1RPCUrl: newFeeRPC(t, big.NewInt(1), big.NewInt(300_000_000)), PrivateKey: privateKey}
-	require.NoError(t, SetDisputeGameImplViaForge(env, SetDisputeGameImplInput{
+	require.NoError(t, SetDisputeGameImpl(env, SetDisputeGameImplInput{
 		Factory:             common.Address{'F'},
 		Impl:                common.Address{'I'},
 		AnchorStateRegistry: common.Address{},
