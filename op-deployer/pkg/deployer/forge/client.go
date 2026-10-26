@@ -13,6 +13,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/ethereum-optimism/optimism/op-service/log"
 )
 
 // waitDelay bounds how long execCmd waits for the output pipes to close after
@@ -91,6 +93,9 @@ func NewStandardClient(workdir string) (*Client, error) {
 
 	forgeClient.Wd = forgeWd
 	fmt.Printf("Forge client working directory: %s\n", forgeClient.Wd)
+	if err := relocateCache(forgeWd); err != nil {
+		log.Warn("Failed to relocate the forge compile cache, forge will recompile", "dir", forgeWd, "err", err)
+	}
 
 	return forgeClient, nil
 }
@@ -178,6 +183,9 @@ func (c *Client) execCmd(ctx context.Context, stdout io.Writer, stderr io.Writer
 	cmd.Stdout = mwStdout
 	cmd.Stderr = mwStderr
 	cmd.Dir = c.Wd
+	// The artifacts' foundry.toml denies warnings, and forge ignores its compile cache at that
+	// deny level, so every script run would recompile the bundled contracts.
+	cmd.Env = append(cmd.Environ(), "FOUNDRY_DENY=never")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to run forge command: %w", err)
 	}
