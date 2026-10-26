@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
@@ -26,6 +27,8 @@ type ForgeEnv struct {
 	Context    context.Context
 	L1RPCUrl   string
 	PrivateKey string
+	// UnlockedSender, when set, sends from this unlocked node account instead of PrivateKey.
+	UnlockedSender common.Address
 	// Genesis, when set, is the offline L1 state that the scripts run on.
 	Genesis *GenesisState
 }
@@ -66,6 +69,8 @@ func runScript[I, O any](env *ForgeEnv, newCaller newScriptCaller[I, O], input I
 	flags := []string{"--rpc-url", env.L1RPCUrl}
 	switch {
 	case !broadcast:
+	case env.UnlockedSender != (common.Address{}):
+		flags = append(flags, "--broadcast", "--unlocked", "--sender", env.UnlockedSender.Hex())
 	case env.PrivateKey != "":
 		keystore, err := newForgeKeystore(env.PrivateKey)
 		if err != nil {
