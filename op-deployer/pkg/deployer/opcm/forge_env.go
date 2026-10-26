@@ -20,17 +20,19 @@ import (
 	"github.com/ethereum-optimism/optimism/op-deployer/pkg/deployer/forge"
 )
 
-// ForgeEnv runs the deploy scripts with forge against a live L1.
+// ForgeEnv runs the deploy scripts with forge, against a live L1 or offline on a GenesisState.
 type ForgeEnv struct {
 	Client     *forge.Client
 	Context    context.Context
 	L1RPCUrl   string
 	PrivateKey string
+	// Genesis, when set, is the offline L1 state that the scripts run on.
+	Genesis *GenesisState
 }
 
 type newScriptCaller[I, O any] func(*forge.Client) forge.ScriptCaller[I, O]
 
-// broadcastScript runs a script that sends transactions to the L1.
+// broadcastScript runs a script that sends transactions, on the live L1 or on the genesis state.
 func broadcastScript[I, O any](env *ForgeEnv, newCaller newScriptCaller[I, O], input I) (O, error) {
 	return runScript(env, newCaller, input, true)
 }
@@ -49,6 +51,15 @@ func runScript[I, O any](env *ForgeEnv, newCaller newScriptCaller[I, O], input I
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if env.Genesis != nil {
+		err := env.Genesis.run(env.Client, broadcast, func(client *forge.Client, flags []string) error {
+			var err error
+			out, err = newCaller(client)(ctx, input, flags...)
+			return err
+		})
+		return out, err
+	}
+
 	if env.L1RPCUrl == "" {
 		return out, errors.New("L1 RPC URL is required for Forge deployments")
 	}
