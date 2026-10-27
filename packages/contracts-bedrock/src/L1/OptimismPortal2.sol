@@ -696,7 +696,13 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
         payable
         metered(_gasLimit)
     {
-        if (!DepositorAllowlist.isAllowed(msg.sender)) revert OptimismPortal_DepositorNotAllowed();
+        // This check will prevent deposits from being made by addresses that are not allowed to make deposits.
+        // It will also prevent calls from the L1CrossDomainMessenger, and prevents the L1StandardBridge
+        // from depositing ETH and minting tokens on L2.
+        // The proxy admin owner is always allowed so that L2 contract upgrades can be deposited.
+        if (!DepositorAllowlist.isAllowed(msg.sender) && msg.sender != proxyAdminOwner()) {
+            revert OptimismPortal_DepositorNotAllowed();
+        }
 
         if (_isUsingCustomGasToken()) {
             if (msg.value > 0) revert OptimismPortal_NotAllowedOnCGTMode();
