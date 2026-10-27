@@ -555,3 +555,66 @@ async fn a_block_is_queued_for_finalization_only_once_it_is_recorded() {
 mod database;
 
 mod safedb_tests;
+
+#[tokio::test]
+async fn reset_retaining_confirmed_head_resumes_without_a_new_l1_head() {
+    let mut client = MockDerivationEngineClient::new();
+    client.expect_send_safe_l2_signal().times(2).returning(|_| Ok(()));
+    let mut node = RecordingActor::new(client);
+    node.complete_el_sync_at(RESUME_HEAD).await;
+    node.signal(Signal::Reset(kona_derive::ResetSignal { l2_safe_head: l2_block(RESUME_HEAD) }))
+        .await;
+    assert_eq!(
+        node.actor.derivation_state_machine.current_state(),
+        DerivationState::AwaitingSafeHeadConfirmation
+    );
+    assert_eq!(
+        node.actor.attributes_awaiting_confirmation.as_ref().unwrap().parent,
+        l2_block(RESUME_HEAD)
+    );
+}
+
+#[tokio::test]
+async fn failed_reset_retaining_confirmed_head_does_not_resume_derivation() {
+    let (derivation_origin_tx, derivation_origin_rx) = watch::channel(None);
+    let (request_tx, request_rx) = mpsc::channel(1);
+    let origin = l1_block(100);
+    let mut actor = DerivationActor::new(
+        MockDerivationEngineClient::new(),
+        request_rx,
+        StubPipeline {
+            rollup_config: Arc::new(RollupConfig::default()),
+            origin,
+            step_result: StepResult::StepFailed(PipelineError::Eof.temp()),
+            reset_error: None,
+        },
+        None,
+        l1_block(0).id(),
+        derivation_origin_tx,
+    );
+    let safe = l2_block(RESUME_HEAD);
+    request_tx
+        .send(DerivationActorRequest::ProcessEngineSyncCompletionRequest(Box::new(safe)))
+        .await
+        .unwrap();
+    actor.step().await.unwrap();
+    assert_eq!(actor.derivation_state_machine.current_state(), DerivationState::AwaitingL1Data);
+
+    actor.pipeline.step_result = StepResult::AdvancedOrigin;
+    actor.pipeline.reset_error = Some(PipelineError::Eof.temp());
+    request_tx
+        .send(DerivationActorRequest::ProcessEngineSignalRequest(Box::new(Signal::Reset(
+            kona_derive::ResetSignal { l2_safe_head: safe },
+        ))))
+        .await
+        .unwrap();
+    actor.step().await.unwrap();
+
+    assert_eq!(
+        actor.derivation_state_machine.current_state(),
+        DerivationState::AwaitingUpdateAfterSignal
+    );
+    assert_eq!(actor.pipeline.origin, origin);
+    assert!(matches!(actor.pipeline.step_result, StepResult::AdvancedOrigin));
+    assert!(derivation_origin_rx.borrow().is_none());
+}
