@@ -245,9 +245,9 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
     error OptimismPortal_DepositorNotAllowed();
 
     /// @notice Semantic version.
-    /// @custom:semver 5.8.0-portal-filter
+    /// @custom:semver 5.8.0+deposit-allowlist
     function version() public pure virtual returns (string memory) {
-        return "5.8.0-portal-filter";
+        return "5.8.0+deposit-allowlist";
     }
 
     /// @param _proofMaturityDelaySeconds The proof maturity delay in seconds.
