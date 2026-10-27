@@ -217,3 +217,30 @@ contract SemverComp_HasExtraTag_Test is SemverComp_TestInit {
         assertTrue(SemverComp.hasExtraTag("1.2.3-rc.1+build.5"));
     }
 }
+
+/// @notice Tests the `hasPrereleaseTag` function behavior.
+contract SemverComp_HasPrereleaseTag_Test is SemverComp_TestInit {
+    function test_hasPrereleaseTag_succeeds() external pure {
+        // Clean versions have no extra tags
+        assertFalse(SemverComp.hasPrereleaseTag("1.2.3"));
+        assertFalse(SemverComp.hasPrereleaseTag("0.0.0"));
+        assertFalse(SemverComp.hasPrereleaseTag("10.20.30"));
+
+        // Prerelease tags
+        assertTrue(SemverComp.hasPrereleaseTag("1.2.3-beta"));
+        assertTrue(SemverComp.hasPrereleaseTag("1.2.3-beta.1"));
+        assertTrue(SemverComp.hasPrereleaseTag("1.2.3-rc.1"));
+        assertTrue(SemverComp.hasPrereleaseTag("1.2.3-alpha"));
+
+        // Build metadata
+        assertFalse(SemverComp.hasPrereleaseTag("1.2.3+interop"));
+        assertFalse(SemverComp.hasPrereleaseTag("1.2.3+interop.10"));
+        assertFalse(SemverComp.hasPrereleaseTag("1.2.3+build.5"));
+        assertFalse(SemverComp.hasPrereleaseTag("1.2.3+custom-gas-token"));
+        assertFalse(SemverComp.hasPrereleaseTag("5.8.0+deposit-allowlist"));
+
+        // Both prerelease and build metadata
+        assertTrue(SemverComp.hasPrereleaseTag("1.2.3-beta.1+interop"));
+        assertTrue(SemverComp.hasPrereleaseTag("1.2.3-rc.1+build.5"));
+    }
+}

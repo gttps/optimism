@@ -99,4 +99,12 @@ library SemverComp {
     function hasExtraTag(string memory _semver) internal pure returns (bool) {
         return LibString.contains(_semver, "-") || LibString.contains(_semver, "+");
     }
+
+    /// @notice Checks if a semver string has a prerelease tag ("-" before any "+"). Build metadata
+    ///         ("+") is not a prerelease and does not affect precedence, and may itself contain "-".
+    /// @param _semver The semver string to check.
+    /// @return True if the semver has a prerelease tag, false otherwise.
+    function hasPrereleaseTag(string memory _semver) internal pure returns (bool) {
+        return LibString.contains(LibString.split(_semver, "+")[0], "-");
+    }
 }

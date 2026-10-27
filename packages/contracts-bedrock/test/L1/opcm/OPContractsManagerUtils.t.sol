@@ -661,8 +661,8 @@ contract OPContractsManagerUtils_Upgrade_Test is OPContractsManagerUtils_TestIni
         );
     }
 
-    /// @notice Tests that upgrade reverts with build metadata tag in production environment.
-    function test_upgrade_buildMetadataInProd_reverts() public {
+    /// @notice Tests that upgrade succeeds with a build metadata tag in production environment.
+    function test_upgrade_buildMetadataInProd_succeeds() public {
         // Remove testing environment marker to simulate production.
         vm.etch(Constants.TESTING_ENVIRONMENT_ADDRESS, hex"");
 
@@ -671,11 +671,6 @@ contract OPContractsManagerUtils_Upgrade_Test is OPContractsManagerUtils_TestIni
 
         OPContractsManagerUtils_ImplV2Interop_Harness implInterop = new OPContractsManagerUtils_ImplV2Interop_Harness();
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                IOPContractsManagerUtils.OPContractsManagerUtils_ExtraTagInProd.selector, address(implInterop)
-            )
-        );
         utils.upgrade(
             proxyAdmin,
             address(proxy),
@@ -684,6 +679,8 @@ contract OPContractsManagerUtils_Upgrade_Test is OPContractsManagerUtils_TestIni
             TEST_SLOT,
             TEST_OFFSET
         );
+
+        assertEq(proxyAdmin.getProxyImplementation(payable(address(proxy))), address(implInterop));
     }
 
     /// @notice Tests that upgrade with extra tags succeeds when dev features are enabled.
