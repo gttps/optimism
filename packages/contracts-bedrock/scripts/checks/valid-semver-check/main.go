@@ -90,6 +90,8 @@ func getVersion(artifact *solc.ForgeArtifact) (string, error) {
 }
 
 func assertValidSemver(version string) error {
+	// Build metadata, such as "5.8.0+deposit-allowlist", is not part of the version.
+	version, _, _ = strings.Cut(version, "+")
 	parts := strings.Split(version, ".")
 
 	if len(parts) != 3 {
