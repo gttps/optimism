@@ -340,13 +340,12 @@ contract OPContractsManagerUtils {
             revert OPContractsManagerUtils_DowngradeNotAllowed(address(_target));
         }
 
-        // Block deployments with a prerelease version tag when dev features are not enabled.
-        // Build metadata (X.Y.Z+tag) is allowed since it does not affect precedence, which lets
-        // a variant release such as 5.8.0+deposit-allowlist deploy without dev features (which
-        // are already blocked on mainnet by the container constructor).
+        // Block deployments with extra version tags (prerelease or build metadata) when dev
+        // features are not enabled. Only clean X.Y.Z versions are allowed unless dev features are
+        // explicitly enabled (which is already blocked on mainnet by the container constructor).
         if (
             contractsContainer.devFeatureBitmap() == bytes32(0)
-                && SemverComp.hasPrereleaseTag(ISemver(_implementation).version())
+                && SemverComp.hasExtraTag(ISemver(_implementation).version())
         ) {
             revert OPContractsManagerUtils_ExtraTagInProd(_implementation);
         }

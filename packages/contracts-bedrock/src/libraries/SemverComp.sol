@@ -93,18 +93,17 @@ library SemverComp {
         return eq(_a, _b) || gt(_a, _b);
     }
 
+    /// @notice Build metadata of the deposit allowlist release, which is deployable in production.
+    string internal constant DEPOSIT_ALLOWLIST_TAG = "+deposit-allowlist";
+
     /// @notice Checks if a semver string has extra tags (prerelease "-" or build metadata "+").
+    ///         The "+deposit-allowlist" build metadata is carved out and does not count.
     /// @param _semver The semver string to check.
     /// @return True if the semver has extra tags, false otherwise.
     function hasExtraTag(string memory _semver) internal pure returns (bool) {
+        if (LibString.endsWith(_semver, DEPOSIT_ALLOWLIST_TAG)) {
+            _semver = LibString.slice(_semver, 0, bytes(_semver).length - bytes(DEPOSIT_ALLOWLIST_TAG).length);
+        }
         return LibString.contains(_semver, "-") || LibString.contains(_semver, "+");
-    }
-
-    /// @notice Checks if a semver string has a prerelease tag ("-" before any "+"). Build metadata
-    ///         ("+") is not a prerelease and does not affect precedence, and may itself contain "-".
-    /// @param _semver The semver string to check.
-    /// @return True if the semver has a prerelease tag, false otherwise.
-    function hasPrereleaseTag(string memory _semver) internal pure returns (bool) {
-        return LibString.contains(LibString.split(_semver, "+")[0], "-");
     }
 }
