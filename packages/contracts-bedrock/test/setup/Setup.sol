@@ -23,6 +23,7 @@ import { Config } from "scripts/libraries/Config.sol";
 import { GameType } from "src/dispute/lib/LibUDT.sol";
 import { GameTypes } from "src/dispute/lib/Types.sol";
 import { Predeploys } from "src/libraries/Predeploys.sol";
+import { DepositorAllowlist } from "src/libraries/DepositorAllowlist.sol";
 import { Preinstalls } from "src/libraries/Preinstalls.sol";
 import { AddressAliasHelper } from "src/vendor/AddressAliasHelper.sol";
 import { Chains } from "scripts/libraries/Chains.sol";
@@ -303,6 +304,14 @@ abstract contract Setup is FeatureFlags {
     }
 
     /// @dev Skips tests when running against a forked production network.
+    /// @notice Skips the test when the portal depositor allowlist restricts deposits on the
+    ///         current L1 chain, which rejects deposits relayed by the messenger and bridges.
+    function skipIfDepositsRestricted() public {
+        if (DepositorAllowlist.isRestricted()) {
+            vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
+        }
+    }
+
     function skipIfForkTest(string memory message) public {
         if (isL1ForkTest()) {
             vm.skip(true);
