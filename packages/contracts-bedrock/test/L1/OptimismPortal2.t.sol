@@ -22,6 +22,7 @@ import { Constants } from "src/libraries/Constants.sol";
 import { AddressAliasHelper } from "src/vendor/AddressAliasHelper.sol";
 import { DevFeatures } from "src/libraries/DevFeatures.sol";
 import { Features } from "src/libraries/Features.sol";
+import { DepositorAllowlist } from "src/libraries/DepositorAllowlist.sol";
 import "src/dispute/lib/Types.sol";
 import { UnknownChainId } from "src/dispute/lib/Errors.sol";
 
@@ -100,7 +101,7 @@ abstract contract OptimismPortal2_TestInit is DisputeGameFactory_TestInit {
             _proposedBlockNumber = 0xFF;
         }
 
-        depositor = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        depositor = makeAddr("depositor");
 
         setupFaultDisputeGame(Claim.wrap(_outputRoot));
 
@@ -2810,8 +2811,11 @@ contract OptimismPortal2_Params_Test is CommonTest {
             assertEq(prevBlockNum, _prevBlockNum);
         }
 
-        // Do a deposit, should not revert
-        vm.prank(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
+        // Do a deposit from a random allowlisted depositor.
+        vm.chainId(11155111);
+        address[] memory depositors = DepositorAllowlist.allowedDepositors();
+        address allowedDepositor = depositors[vm.randomUint(0, depositors.length - 1)];
+        vm.prank(allowedDepositor, allowedDepositor);
         optimismPortal2.depositTransaction{ gas: MAX_GAS_LIMIT }({
             _to: address(0x20),
             _value: 0x40,
