@@ -975,8 +975,10 @@ workflows:
       # -----------------------------------------------------------------------
       # OP-Reth crate-specific jobs
       # -----------------------------------------------------------------------
-      - op-reth-compact-codec:
-          context: *rust-ci-context
+      # op-reth-compact-codec is disabled on this release branch: its base build
+      # needs a newer rustc than the v8.0.0 toolchain pin provides.
+      # - op-reth-compact-codec:
+      #     context: *rust-ci-context
 
       - rust-ci-cargo-tests:
           name: op-reth-integration-tests
@@ -1061,7 +1063,7 @@ workflows:
             - rust-check-no-std: terminal
             - rust-wasm-unknown: terminal
             - rust-wasm-wasi: terminal
-            - op-reth-compact-codec: terminal
+            # - op-reth-compact-codec: terminal  # disabled on this branch, see above
             - op-reth-integration-tests: terminal
             - kona-lint-cannon: terminal
             - kona-build-fpvm-cannon-client: terminal
