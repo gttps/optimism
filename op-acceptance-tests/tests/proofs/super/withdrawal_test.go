@@ -8,16 +8,13 @@ import (
 )
 
 func TestSuperPermissionedWithdrawal(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	withdrawal.TestWithdrawal(gt, gameTypes.SuperPermissionedGameType)
 }
 
 func TestSuperCannonKonaWithdrawal(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	withdrawal.TestWithdrawal(gt, gameTypes.SuperCannonKonaGameType)
 }
 
 func TestZKDisputeGameWithdrawal(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	withdrawal.TestWithdrawal(gt, gameTypes.ZKDisputeGameType)
 }

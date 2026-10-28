@@ -12,7 +12,6 @@ import (
 )
 
 func TestDepositCannotValidateMessage(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	t := devtest.ParallelT(gt)
 	sys := presets.NewSimpleInterop(t)
 	require := t.Require()

@@ -31,7 +31,6 @@ func TestMain(m *testing.M) {
 // TestERC20BridgeDeposits tests the the L1StandardBridge bridge ERC20
 // functionality.
 func TestERC20BridgeDeposits(t *testing.T) {
-	t.Skip("Skipping: the portal depositor allowlist rejects deposits from the L1StandardBridge")
 	op_e2e.InitParallel(t)
 
 	cfg := e2esys.DefaultSystemConfig(t)

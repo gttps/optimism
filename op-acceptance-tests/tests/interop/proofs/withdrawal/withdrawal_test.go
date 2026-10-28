@@ -14,7 +14,6 @@ import (
 )
 
 func TestSuperRootWithdrawal(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	t := devtest.ParallelT(gt)
 	sys := presets.NewSimpleInterop(t, presets.WithTimeTravelEnabled())
 	sys.L1Network.WaitForOnline()
@@ -61,7 +60,6 @@ func TestSuperRootWithdrawal(gt *testing.T) {
 }
 
 func TestProveWithdrawalParametersFaultProofsSuperRoot(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	t := devtest.ParallelT(gt)
 	sys := presets.NewSimpleInterop(t,
 		presets.WithTimeTravelEnabled(),

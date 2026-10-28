@@ -388,7 +388,6 @@ func TestEIP7939CLZ(gt *testing.T) {
 // — which is a tx validity rule — must not apply to them; otherwise an attacker could
 // trivially brick the rollup by submitting deposits that can never be included.
 func TestEIP7825DepositBypassesTxGasLimitCap(gt *testing.T) {
-	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	t := devtest.ParallelT(gt)
 	sysgo.SkipOnOpGeth(t, "osaka is not supported in op-geth")
 
