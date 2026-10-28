@@ -2638,8 +2638,9 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         }
     }
 
-    /// @notice Tests that each allowed depositor can make a deposit.
+    /// @notice Tests that each allowed depositor can make a deposit on a restricted chain.
     function test_depositTransaction_allowedDepositor_succeeds() external {
+        vm.chainId(1);
         address[5] memory depositors = [
             0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
             0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
@@ -2653,9 +2654,9 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         }
     }
 
-    /// @notice Tests that a deposit from any other address reverts.
     /// @notice Tests that the proxy admin owner can deposit without being in the allowlist.
     function test_depositTransaction_proxyAdminOwner_succeeds() external {
+        vm.chainId(1);
         address pao = optimismPortal2.proxyAdminOwner();
         vm.expectEmit(address(optimismPortal2));
         emitTransactionDeposited({
@@ -2671,7 +2672,9 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
     }
 
+    /// @notice Tests that a deposit from any other address reverts on a restricted chain.
     function testFuzz_depositTransaction_disallowedDepositor_reverts(address _sender) external {
+        vm.chainId(1);
         vm.assume(_sender != optimismPortal2.proxyAdminOwner());
         vm.assume(_sender != 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
         vm.assume(_sender != 0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
@@ -2681,6 +2684,15 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
 
         vm.prank(_sender, _sender);
         vm.expectRevert(IOptimismPortal.OptimismPortal_DepositorNotAllowed.selector);
+        optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
+    }
+
+    /// @notice Tests that any address can deposit on a chain that is not mainnet or Sepolia.
+    function testFuzz_depositTransaction_unrestrictedChain_succeeds(address _sender, uint64 _chainId) external {
+        vm.assume(_chainId != 1 && _chainId != 11155111);
+        vm.assume(_sender != address(0) && _sender != address(vm) && _sender != CONSOLE);
+        vm.chainId(_chainId);
+        vm.prank(_sender, _sender);
         optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
     }
 }

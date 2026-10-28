@@ -332,8 +332,6 @@ contract L1StandardBridge_Paused_Test is CommonTest {
 contract L1StandardBridge_Receive_Test is CommonTest {
     /// @notice Tests receive bridges ETH successfully.
     function test_receive_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         uint256 portalBalanceBefore = address(optimismPortal2).balance;
         uint256 ethLockboxBalanceBefore = address(ethLockbox).balance;
@@ -381,8 +379,6 @@ contract L1StandardBridge_Receive_Test is CommonTest {
 
     /// @notice Tests that receive reverts when custom gas token is enabled and value is sent.
     function testFuzz_receive_withCustomGasToken_reverts(uint256 _value) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
 
         _value = bound(_value, 1, type(uint128).max);
@@ -405,8 +401,6 @@ contract L1StandardBridge_DepositETH_Test is L1StandardBridge_TestInit {
     ///         Only EOA can call depositETH.
     ///         ETH ends up in the optimismPortal.
     function test_depositETH_fromEOA_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         _preBridgeETH({ isLegacy: true, value: 500 });
         uint256 portalBalanceBefore = address(optimismPortal2).balance;
@@ -423,8 +417,6 @@ contract L1StandardBridge_DepositETH_Test is L1StandardBridge_TestInit {
 
     /// @notice Tests that depositing ETH succeeds for an EOA using 7702 delegation.
     function test_depositETH_fromEOA7702_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         // Set alice to have 7702 code.
         vm.etch(alice, abi.encodePacked(hex"EF0100", address(0)));
@@ -452,8 +444,6 @@ contract L1StandardBridge_DepositETH_Test is L1StandardBridge_TestInit {
 
     /// @notice Tests that depositETH reverts when custom gas token is enabled and value is sent.
     function testFuzz_depositETH_withCustomGasToken_reverts(uint256 _value, uint32 _minGasLimit) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
 
         _value = bound(_value, 1, type(uint128).max);
@@ -466,8 +456,6 @@ contract L1StandardBridge_DepositETH_Test is L1StandardBridge_TestInit {
 
     /// @notice Tests that depositETH reverts when custom gas token is enabled for EOA with 7702 delegation.
     function testFuzz_depositETH_fromEOA7702WithCustomGasToken_reverts(uint256 _value, uint32 _minGasLimit) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
         _value = bound(_value, 1, type(uint128).max);
 
@@ -490,8 +478,6 @@ contract L1StandardBridge_DepositETHTo_Test is L1StandardBridge_TestInit {
     ///         EOA or contract can call depositETHTo.
     ///         ETH ends up in the optimismPortal.
     function test_depositETHTo_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         _preBridgeETHTo({ isLegacy: true, value: 600 });
         uint256 portalBalanceBefore = address(optimismPortal2).balance;
@@ -510,8 +496,6 @@ contract L1StandardBridge_DepositETHTo_Test is L1StandardBridge_TestInit {
     /// @param _to Random recipient address
     /// @param _amount Random ETH amount to deposit
     function testFuzz_depositETHTo_randomRecipient_succeeds(address _to, uint256 _amount) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         vm.assume(_to != address(0));
         _amount = bound(_amount, 1, 10 ether);
@@ -539,8 +523,6 @@ contract L1StandardBridge_DepositETHTo_Test is L1StandardBridge_TestInit {
     )
         external
     {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
         vm.assume(_to != address(0));
         _value = bound(_value, 1, type(uint128).max);
@@ -568,8 +550,6 @@ contract L1StandardBridge_DepositERC20_Test is CommonTest {
     ///         Calls depositTransaction on the OptimismPortal.
     ///         Only EOA can call depositERC20.
     function test_depositERC20_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         uint256 nonce = l1CrossDomainMessenger.messageNonce();
         uint256 version = 0; // Internal constant in the OptimismPortal: DEPOSIT_VERSION
         address l1MessengerAliased = AddressAliasHelper.applyL1ToL2Alias(address(l1CrossDomainMessenger));
@@ -645,8 +625,6 @@ contract L1StandardBridge_DepositERC20_Test is CommonTest {
     /// @param _amount Random ERC20 amount to deposit
     /// @param _gasLimit Random gas limit for L2 execution
     function testFuzz_depositERC20_amountAndGas_succeeds(uint256 _amount, uint32 _gasLimit) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         _amount = bound(_amount, 1, 1000000);
         _gasLimit = uint32(bound(uint256(_gasLimit), 21000, 10000000));
 
@@ -669,8 +647,6 @@ contract L1StandardBridge_DepositERC20To_Test is CommonTest {
     ///         Calls depositTransaction on the OptimismPortal.
     ///         Contracts can call depositERC20.
     function test_depositERC20To_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         uint256 nonce = l1CrossDomainMessenger.messageNonce();
         uint256 version = 0; // Internal constant in the OptimismPortal: DEPOSIT_VERSION
         address l1MessengerAliased = AddressAliasHelper.applyL1ToL2Alias(address(l1CrossDomainMessenger));
@@ -733,8 +709,6 @@ contract L1StandardBridge_DepositERC20To_Test is CommonTest {
 
     /// @notice Verifies depositERC20To succeeds with zero amount
     function test_depositERC20To_zeroAmount_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         deal(address(L1Token), alice, 1000, true);
         vm.prank(alice);
         L1Token.approve(address(l1StandardBridge), 0);
@@ -868,8 +842,6 @@ contract L1StandardBridge_Uncategorized_Test is L1StandardBridge_TestInit {
     ///         Only EOA can call bridgeETH.
     ///         ETH ends up in the optimismPortal.
     function test_bridgeETH_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         _preBridgeETH({ isLegacy: false, value: 500 });
         uint256 portalBalanceBefore = address(optimismPortal2).balance;
@@ -890,8 +862,6 @@ contract L1StandardBridge_Uncategorized_Test is L1StandardBridge_TestInit {
     ///         Only EOA can call bridgeETHTo.
     ///         ETH ends up in the optimismPortal.
     function test_bridgeETHTo_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureEnabled(Features.CUSTOM_GAS_TOKEN);
         _preBridgeETHTo({ isLegacy: false, value: 600 });
         uint256 portalBalanceBefore = address(optimismPortal2).balance;
@@ -967,8 +937,6 @@ contract L1StandardBridge_Uncategorized_Test is L1StandardBridge_TestInit {
 
     /// @notice Tests that bridgeETH reverts when custom gas token is enabled and value is sent.
     function testFuzz_bridgeETH_withCustomGasToken_reverts(uint256 _value, uint32 _minGasLimit) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
 
         _value = bound(_value, 1, type(uint128).max);
@@ -987,8 +955,6 @@ contract L1StandardBridge_Uncategorized_Test is L1StandardBridge_TestInit {
     )
         external
     {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
 
         vm.assume(_to != address(0));

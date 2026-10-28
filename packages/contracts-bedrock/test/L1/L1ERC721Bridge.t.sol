@@ -192,8 +192,6 @@ contract L1ERC721Bridge_Paused_Test is L1ERC721Bridge_TestInit {
 contract L1ERC721Bridge_FinalizeBridgeERC721_Test is L1ERC721Bridge_TestInit {
     /// @notice Tests that the ERC721 bridge successfully finalizes a withdrawal.
     function test_finalizeBridgeERC721_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         // Bridge the token.
         vm.prank(alice, alice);
         l1ERC721Bridge.bridgeERC721(address(localToken), address(remoteToken), tokenId, 1234, hex"5678");
@@ -281,8 +279,6 @@ contract L1ERC721Bridge_FinalizeBridgeERC721_Test is L1ERC721Bridge_TestInit {
     /// @param _from Random from address for testing.
     /// @param _to Random to address for testing.
     function testFuzz_finalizeBridgeERC721_randomAddresses_succeeds(address _from, address _to) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         // Avoid special predeploy addresses that might cause initialization issues
         vm.assume(_from != address(0) && _to != address(0));
         vm.assume(
@@ -351,8 +347,6 @@ contract L1ERC721Bridge_FinalizeBridgeERC721_Test is L1ERC721Bridge_TestInit {
 contract L1ERC721Bridge_Uncategorized_Test is L1ERC721Bridge_TestInit {
     /// @notice Tests that the ERC721 can be bridged successfully.
     function test_bridgeERC721_fromEOA_succeeds() public {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         // Expect a call to the messenger.
         vm.expectCall(
             address(l1CrossDomainMessenger),
@@ -384,8 +378,6 @@ contract L1ERC721Bridge_Uncategorized_Test is L1ERC721Bridge_TestInit {
 
     /// @notice Tests that the ERC721 can be bridged successfully.
     function test_bridgeERC721_fromEOA7702_succeeds() public {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         // Expect a call to the messenger.
         vm.expectCall(
             address(l1CrossDomainMessenger),
@@ -458,8 +450,6 @@ contract L1ERC721Bridge_Uncategorized_Test is L1ERC721Bridge_TestInit {
     /// @notice Tests bridgeERC721 with various gas limits succeeds.
     /// @param _minGasLimit Random gas limit for testing.
     function testFuzz_bridgeERC721_variousGasLimits_succeeds(uint32 _minGasLimit) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         // Bound gas limit to avoid out of gas errors
         _minGasLimit = uint32(bound(uint256(_minGasLimit), 21000, 10000000));
 
@@ -487,8 +477,6 @@ contract L1ERC721Bridge_Uncategorized_Test is L1ERC721Bridge_TestInit {
     /// @notice Tests that the ERC721 bridge successfully sends a token to a different address than
     ///         the owner.
     function test_bridgeERC721To_succeeds() external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         // Expect a call to the messenger.
         vm.expectCall(
             address(l1CrossDomainMessenger),
@@ -568,8 +556,6 @@ contract L1ERC721Bridge_Uncategorized_Test is L1ERC721Bridge_TestInit {
     /// @notice Tests bridgeERC721To with random valid recipient addresses.
     /// @param _to Random recipient address for bridging.
     function testFuzz_bridgeERC721To_validRecipient_succeeds(address _to) external {
-        vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
-
         vm.assume(_to != address(0));
 
         // Expect a call to the messenger.
