@@ -17,7 +17,7 @@ import { SecureMerkleTrie } from "src/libraries/trie/SecureMerkleTrie.sol";
 import { AddressAliasHelper } from "src/vendor/AddressAliasHelper.sol";
 import { Claim, GameStatus, GameType, GameTypes } from "src/dispute/lib/Types.sol";
 import { Features } from "src/libraries/Features.sol";
-import { DepositorAllowlist } from "src/libraries/DepositorAllowlist.sol";
+import { PortalAllowlist } from "src/libraries/PortalAllowlist.sol";
 
 // Interfaces
 import { ISemver } from "interfaces/universal/ISemver.sol";
@@ -391,7 +391,7 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
         _assertNotPaused();
 
         // Only allowlisted addresses can prove withdrawals.
-        if (!DepositorAllowlist.isAllowed(msg.sender)) {
+        if (!PortalAllowlist.isAllowed(msg.sender)) {
             revert OptimismPortal_WithdrawerNotAllowed();
         }
 
@@ -578,7 +578,7 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
         _assertNotPaused();
 
         // Only allowlisted addresses can finalize withdrawals.
-        if (!DepositorAllowlist.isAllowed(msg.sender)) {
+        if (!PortalAllowlist.isAllowed(msg.sender)) {
             revert OptimismPortal_WithdrawerNotAllowed();
         }
 
@@ -713,7 +713,7 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
         // It will also prevent calls from the L1CrossDomainMessenger, and prevents the L1StandardBridge
         // from depositing ETH and minting tokens on L2.
         // The proxy admin owner is always allowed so that L2 contract upgrades can be deposited.
-        if (!DepositorAllowlist.isAllowed(msg.sender) && msg.sender != proxyAdminOwner()) {
+        if (!PortalAllowlist.isAllowed(msg.sender) && msg.sender != proxyAdminOwner()) {
             revert OptimismPortal_DepositorNotAllowed();
         }
 

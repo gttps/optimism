@@ -22,7 +22,7 @@ import { Constants } from "src/libraries/Constants.sol";
 import { AddressAliasHelper } from "src/vendor/AddressAliasHelper.sol";
 import { DevFeatures } from "src/libraries/DevFeatures.sol";
 import { Features } from "src/libraries/Features.sol";
-import { DepositorAllowlist } from "src/libraries/DepositorAllowlist.sol";
+import { PortalAllowlist } from "src/libraries/PortalAllowlist.sol";
 import "src/dispute/lib/Types.sol";
 import { UnknownChainId } from "src/dispute/lib/Errors.sol";
 
@@ -897,8 +897,8 @@ contract OptimismPortal2_ProveWithdrawalTransaction_Test is OptimismPortal2_Test
     /// @notice Tests that an allowlisted address can prove a withdrawal on Sepolia.
     function test_proveWithdrawalTransaction_allowedWithdrawer_succeeds() external {
         vm.chainId(11155111);
-        address[] memory depositors = DepositorAllowlist.allowedDepositors();
-        address withdrawer = depositors[vm.randomUint(0, depositors.length - 1)];
+        address[] memory allowed = PortalAllowlist.allowedAddresses();
+        address withdrawer = allowed[vm.randomUint(0, allowed.length - 1)];
 
         vm.expectEmit(true, true, true, true);
         emit WithdrawalProven(_withdrawalHash, alice, bob);
@@ -917,7 +917,7 @@ contract OptimismPortal2_ProveWithdrawalTransaction_Test is OptimismPortal2_Test
     ///         allowlisted, including the proxy admin owner.
     function testFuzz_proveWithdrawalTransaction_disallowedWithdrawer_reverts(address _sender) external {
         vm.chainId(11155111);
-        vm.assume(!DepositorAllowlist.isAllowed(_sender));
+        vm.assume(!PortalAllowlist.isAllowed(_sender));
 
         vm.prank(_sender);
         vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
@@ -1539,8 +1539,8 @@ contract OptimismPortal2_FinalizeWithdrawalTransaction_Test is OptimismPortal2_T
     /// @notice Tests that an allowlisted address can finalize a withdrawal on Sepolia.
     function test_finalizeWithdrawalTransaction_allowedWithdrawer_succeeds() external {
         vm.chainId(11155111);
-        address[] memory depositors = DepositorAllowlist.allowedDepositors();
-        address withdrawer = depositors[vm.randomUint(0, depositors.length - 1)];
+        address[] memory allowed = PortalAllowlist.allowedAddresses();
+        address withdrawer = allowed[vm.randomUint(0, allowed.length - 1)];
         uint256 bobBalanceBefore = address(bob).balance;
 
         vm.prank(withdrawer);
@@ -1567,7 +1567,7 @@ contract OptimismPortal2_FinalizeWithdrawalTransaction_Test is OptimismPortal2_T
     ///         not allowlisted, including the proxy admin owner.
     function testFuzz_finalizeWithdrawalTransaction_disallowedWithdrawer_reverts(address _sender) external {
         vm.chainId(11155111);
-        vm.assume(!DepositorAllowlist.isAllowed(_sender));
+        vm.assume(!PortalAllowlist.isAllowed(_sender));
 
         vm.prank(_sender);
         vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
@@ -2317,7 +2317,7 @@ contract OptimismPortal2_FinalizeWithdrawalTransactionExternalProof_Test is Opti
         external
     {
         vm.chainId(11155111);
-        vm.assume(!DepositorAllowlist.isAllowed(_sender));
+        vm.assume(!PortalAllowlist.isAllowed(_sender));
 
         vm.prank(_sender);
         vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
@@ -2897,8 +2897,8 @@ contract OptimismPortal2_Params_Test is CommonTest {
 
         // Do a deposit from a random allowlisted depositor.
         vm.chainId(11155111);
-        address[] memory depositors = DepositorAllowlist.allowedDepositors();
-        address allowedDepositor = depositors[vm.randomUint(0, depositors.length - 1)];
+        address[] memory allowed = PortalAllowlist.allowedAddresses();
+        address allowedDepositor = allowed[vm.randomUint(0, allowed.length - 1)];
         vm.prank(allowedDepositor, allowedDepositor);
         optimismPortal2.depositTransaction{ gas: MAX_GAS_LIMIT }({
             _to: address(0x20),
