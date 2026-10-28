@@ -244,6 +244,9 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
     /// @notice Thrown when a deposit is made by an address not in the depositor allowlist.
     error OptimismPortal_DepositorNotAllowed();
 
+    /// @notice Thrown when a withdrawal is proven or finalized by an address not in the allowlist.
+    error OptimismPortal_WithdrawerNotAllowed();
+
     /// @notice Semantic version.
     /// @custom:semver 5.8.0+deposit-allowlist
     function version() public pure virtual returns (string memory) {
@@ -386,6 +389,11 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
     {
         // Cannot prove withdrawal transactions while the system is paused.
         _assertNotPaused();
+
+        // Only allowlisted addresses can prove withdrawals.
+        if (!DepositorAllowlist.isAllowed(msg.sender)) {
+            revert OptimismPortal_WithdrawerNotAllowed();
+        }
 
         // Make sure that the target address is safe.
         if (_isUnsafeTarget(_tx.target)) {
@@ -568,6 +576,11 @@ contract OptimismPortal2 is Initializable, ResourceMetering, ReinitializableBase
     {
         // Cannot finalize withdrawal transactions while the system is paused.
         _assertNotPaused();
+
+        // Only allowlisted addresses can finalize withdrawals.
+        if (!DepositorAllowlist.isAllowed(msg.sender)) {
+            revert OptimismPortal_WithdrawerNotAllowed();
+        }
 
         // Cannot finalize withdrawal with value when custom gas token mode is enabled.
         if (_isUsingCustomGasToken()) {

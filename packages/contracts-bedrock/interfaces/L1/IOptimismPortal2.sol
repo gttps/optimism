@@ -40,6 +40,7 @@ interface IOptimismPortal2 is IProxyAdminOwnedBase {
     error OptimismPortal_ZeroAddress();
     error OptimismPortal_LockboxNotAuthorizedForPortal();
     error OptimismPortal_DepositorNotAllowed();
+    error OptimismPortal_WithdrawerNotAllowed();
     error OutOfGas();
     error UnexpectedList();
     error UnexpectedString();

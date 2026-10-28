@@ -894,6 +894,50 @@ contract OptimismPortal2_ProveWithdrawalTransaction_Test is OptimismPortal2_Test
         });
     }
 
+    /// @notice Tests that an allowlisted address can prove a withdrawal on Sepolia.
+    function test_proveWithdrawalTransaction_allowedWithdrawer_succeeds() external {
+        vm.chainId(11155111);
+        address[] memory depositors = DepositorAllowlist.allowedDepositors();
+        address withdrawer = depositors[vm.randomUint(0, depositors.length - 1)];
+
+        vm.expectEmit(true, true, true, true);
+        emit WithdrawalProven(_withdrawalHash, alice, bob);
+        vm.expectEmit(true, true, true, true);
+        emit WithdrawalProvenExtension1(_withdrawalHash, withdrawer);
+        vm.prank(withdrawer);
+        optimismPortal2.proveWithdrawalTransaction({
+            _tx: _defaultTx,
+            _disputeGameIndex: _proposedGameIndex,
+            _outputRootProof: _outputRootProof,
+            _withdrawalProof: _withdrawalProof
+        });
+    }
+
+    /// @notice Tests that `proveWithdrawalTransaction` reverts on Sepolia when the caller is not
+    ///         allowlisted, including the proxy admin owner.
+    function testFuzz_proveWithdrawalTransaction_disallowedWithdrawer_reverts(address _sender) external {
+        vm.chainId(11155111);
+        vm.assume(!DepositorAllowlist.isAllowed(_sender));
+
+        vm.prank(_sender);
+        vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
+        optimismPortal2.proveWithdrawalTransaction({
+            _tx: _defaultTx,
+            _disputeGameIndex: _proposedGameIndex,
+            _outputRootProof: _outputRootProof,
+            _withdrawalProof: _withdrawalProof
+        });
+
+        vm.prank(optimismPortal2.proxyAdminOwner());
+        vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
+        optimismPortal2.proveWithdrawalTransaction({
+            _tx: _defaultTx,
+            _disputeGameIndex: _proposedGameIndex,
+            _outputRootProof: _outputRootProof,
+            _withdrawalProof: _withdrawalProof
+        });
+    }
+
     /// @notice Tests that `proveWithdrawalTransaction` reverts when the target is the portal
     ///         contract.
     function test_proveWithdrawalTransaction_onSelfCall_reverts() external {
@@ -1489,6 +1533,48 @@ contract OptimismPortal2_FinalizeWithdrawalTransaction_Test is OptimismPortal2_T
         superchainConfig.pause(address(0));
 
         vm.expectRevert(IOptimismPortal.OptimismPortal_CallPaused.selector);
+        optimismPortal2.finalizeWithdrawalTransaction(_defaultTx);
+    }
+
+    /// @notice Tests that an allowlisted address can finalize a withdrawal on Sepolia.
+    function test_finalizeWithdrawalTransaction_allowedWithdrawer_succeeds() external {
+        vm.chainId(11155111);
+        address[] memory depositors = DepositorAllowlist.allowedDepositors();
+        address withdrawer = depositors[vm.randomUint(0, depositors.length - 1)];
+        uint256 bobBalanceBefore = address(bob).balance;
+
+        vm.prank(withdrawer);
+        optimismPortal2.proveWithdrawalTransaction({
+            _tx: _defaultTx,
+            _disputeGameIndex: _proposedGameIndex,
+            _outputRootProof: _outputRootProof,
+            _withdrawalProof: _withdrawalProof
+        });
+
+        game.resolveClaim(0, 0);
+        game.resolve();
+        vm.warp(block.timestamp + optimismPortal2.proofMaturityDelaySeconds() + 1 seconds);
+
+        vm.expectEmit(true, true, false, true);
+        emit WithdrawalFinalized(_withdrawalHash, true);
+        vm.prank(withdrawer);
+        optimismPortal2.finalizeWithdrawalTransaction(_defaultTx);
+
+        assertEq(address(bob).balance, bobBalanceBefore + _defaultTx.value);
+    }
+
+    /// @notice Tests that `finalizeWithdrawalTransaction` reverts on Sepolia when the caller is
+    ///         not allowlisted, including the proxy admin owner.
+    function testFuzz_finalizeWithdrawalTransaction_disallowedWithdrawer_reverts(address _sender) external {
+        vm.chainId(11155111);
+        vm.assume(!DepositorAllowlist.isAllowed(_sender));
+
+        vm.prank(_sender);
+        vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
+        optimismPortal2.finalizeWithdrawalTransaction(_defaultTx);
+
+        vm.prank(optimismPortal2.proxyAdminOwner());
+        vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
         optimismPortal2.finalizeWithdrawalTransaction(_defaultTx);
     }
 
@@ -2223,6 +2309,19 @@ contract OptimismPortal2_FinalizeWithdrawalTransactionExternalProof_Test is Opti
         optimismPortal2.finalizeWithdrawalTransactionExternalProof(_defaultTx, address(this));
 
         assert(address(bob).balance == bobBalanceBefore + _defaultTx.value);
+    }
+
+    /// @notice Tests that `finalizeWithdrawalTransactionExternalProof` reverts on Sepolia when
+    ///         the caller is not allowlisted, whoever submitted the proof.
+    function testFuzz_finalizeWithdrawalTransactionExternalProof_disallowedWithdrawer_reverts(address _sender)
+        external
+    {
+        vm.chainId(11155111);
+        vm.assume(!DepositorAllowlist.isAllowed(_sender));
+
+        vm.prank(_sender);
+        vm.expectRevert(IOptimismPortal.OptimismPortal_WithdrawerNotAllowed.selector);
+        optimismPortal2.finalizeWithdrawalTransactionExternalProof(_defaultTx, address(this));
     }
 }
 
