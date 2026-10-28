@@ -543,8 +543,8 @@ contract OptimismPortal2_Receive_Test is OptimismPortal2_TestInit {
 
         vm.expectEmit(address(optimismPortal2));
         emitTransactionDeposited({
-            _from: depositor,
-            _to: depositor,
+            _from: alice,
+            _to: alice,
             _value: _value,
             _mint: _value,
             _gasLimit: 100_000,
@@ -557,9 +557,9 @@ contract OptimismPortal2_Receive_Test is OptimismPortal2_TestInit {
             vm.expectCall(address(ethLockbox), _value, abi.encodeCall(ethLockbox.lockETH, ()), _value > 0 ? 1 : 0);
         }
 
-        // give depositor money and send as an eoa
-        vm.deal(depositor, _value);
-        vm.prank(depositor, depositor);
+        // give alice money and send as an eoa
+        vm.deal(alice, _value);
+        vm.prank(alice, alice);
         (bool s,) = address(optimismPortal2).call{ value: _value }(hex"");
 
         assertTrue(s);
@@ -588,8 +588,8 @@ contract OptimismPortal2_Receive_Test is OptimismPortal2_TestInit {
         // Expect the transaction deposited event.
         vm.expectEmit(address(optimismPortal2));
         emitTransactionDeposited({
-            _from: depositor,
-            _to: depositor,
+            _from: alice,
+            _to: alice,
             _value: _value,
             _mint: _value,
             _gasLimit: 100_000,
@@ -600,9 +600,9 @@ contract OptimismPortal2_Receive_Test is OptimismPortal2_TestInit {
         // Expect call to the ETHLockbox to lock the funds only if the value is greater than 0.
         vm.expectCall(address(dummyLockbox), _value, abi.encodeCall(ethLockbox.lockETH, ()), _value > 0 ? 1 : 0);
 
-        // give depositor money and send as an eoa
-        vm.deal(depositor, _value);
-        vm.prank(depositor, depositor);
+        // give alice money and send as an eoa
+        vm.deal(alice, _value);
+        vm.prank(alice, alice);
         (bool s,) = address(optimismPortal2).call{ value: _value }(hex"");
 
         assertTrue(s);
@@ -615,9 +615,9 @@ contract OptimismPortal2_Receive_Test is OptimismPortal2_TestInit {
         skipIfSysFeatureDisabled(Features.CUSTOM_GAS_TOKEN);
 
         _value = bound(_value, 1, type(uint128).max);
-        vm.deal(depositor, _value);
+        vm.deal(alice, _value);
 
-        vm.prank(depositor, depositor);
+        vm.prank(alice);
         vm.expectRevert(IOptimismPortal.OptimismPortal_NotAllowedOnCGTMode.selector);
         (bool revertsAsExpected,) = address(optimismPortal2).call{ value: _value }(hex"");
         assertTrue(revertsAsExpected, "expectRevert: call did not revert");
@@ -2372,7 +2372,6 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
     function test_depositTransaction_contractCreation_reverts() external {
         // contract creation must have a target of address(0)
         vm.expectRevert(IOptimismPortal.OptimismPortal_BadTarget.selector);
-        vm.prank(depositor, depositor);
         optimismPortal2.depositTransaction(address(1), 1, 0, true, hex"");
     }
 
@@ -2382,7 +2381,6 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         uint256 size = 120_001;
         uint64 gasLimit = optimismPortal2.minimumGasLimit(uint64(size));
         vm.expectRevert(IOptimismPortal.OptimismPortal_CalldataTooLarge.selector);
-        vm.prank(depositor, depositor);
         optimismPortal2.depositTransaction({
             _to: address(0),
             _value: 0,
@@ -2395,7 +2393,6 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
     /// @notice Tests that `depositTransaction` reverts when the gas limit is too small.
     function test_depositTransaction_smallGasLimit_reverts() external {
         vm.expectRevert(IOptimismPortal.OptimismPortal_GasLimitTooLow.selector);
-        vm.prank(depositor, depositor);
         optimismPortal2.depositTransaction({ _to: address(1), _value: 0, _gasLimit: 0, _isCreation: false, _data: hex"" });
     }
 
@@ -2408,8 +2405,8 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         _value = bound(_value, 1, type(uint256).max - address(optimismPortal2).balance);
         uint64 gasLimit = optimismPortal2.minimumGasLimit(uint64(_data.length));
 
-        vm.deal(depositor, _value);
-        vm.prank(depositor, depositor);
+        vm.deal(alice, _value);
+        vm.prank(alice);
         vm.expectRevert(IOptimismPortal.OptimismPortal_NotAllowedOnCGTMode.selector);
         optimismPortal2.depositTransaction{ value: _value }({
             _to: address(0x40),
@@ -2428,7 +2425,6 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
             vm.expectRevert(IOptimismPortal.OptimismPortal_GasLimitTooLow.selector);
         }
 
-        vm.prank(depositor, depositor);
         optimismPortal2.depositTransaction({
             _to: address(0x40),
             _value: 0,
@@ -2606,7 +2602,7 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
 
         vm.expectEmit(address(optimismPortal2));
         emitTransactionDeposited({
-            _from: AddressAliasHelper.applyL1ToL2Alias(depositor),
+            _from: AddressAliasHelper.applyL1ToL2Alias(address(this)),
             _to: _to,
             _value: _value,
             _mint: _mint,
@@ -2620,9 +2616,8 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
             vm.expectCall(address(ethLockbox), _mint, abi.encodeCall(ethLockbox.lockETH, ()), _mint > 0 ? 1 : 0);
         }
 
-        vm.etch(depositor, hex"00");
-        vm.deal(depositor, _mint);
-        vm.prank(depositor);
+        vm.deal(address(this), _mint);
+        vm.prank(address(this));
         optimismPortal2.depositTransaction{ value: _mint }({
             _to: _to,
             _value: _value,
@@ -2656,7 +2651,7 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
 
     /// @notice Tests that the proxy admin owner can deposit without being in the allowlist.
     function test_depositTransaction_proxyAdminOwner_succeeds() external {
-        vm.chainId(1);
+        vm.chainId(11155111);
         address pao = optimismPortal2.proxyAdminOwner();
         vm.expectEmit(address(optimismPortal2));
         emitTransactionDeposited({
@@ -2686,19 +2681,9 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
     }
 
-    /// @notice Tests that on mainnet, where the list is still empty, only the proxy admin owner
-    ///         can deposit.
-    function testFuzz_depositTransaction_mainnetDepositor_reverts(address _sender) external {
-        vm.chainId(1);
-        vm.assume(_sender != optimismPortal2.proxyAdminOwner());
-        vm.prank(_sender, _sender);
-        vm.expectRevert(IOptimismPortal.OptimismPortal_DepositorNotAllowed.selector);
-        optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
-    }
-
-    /// @notice Tests that any address can deposit on a chain that is not mainnet or Sepolia.
+    /// @notice Tests that any address can deposit on a chain without an allowlist.
     function testFuzz_depositTransaction_unrestrictedChain_succeeds(address _sender, uint64 _chainId) external {
-        vm.assume(_chainId != 1 && _chainId != 11155111);
+        vm.assume(_chainId != 11155111);
         vm.assume(_sender != address(0) && _sender != address(vm) && _sender != CONSOLE);
         vm.chainId(_chainId);
         vm.prank(_sender, _sender);

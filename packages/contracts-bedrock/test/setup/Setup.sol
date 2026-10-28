@@ -307,7 +307,7 @@ abstract contract Setup is FeatureFlags {
     /// @notice Skips the test when the portal depositor allowlist restricts deposits on the
     ///         current L1 chain, which rejects deposits relayed by the messenger and bridges.
     function skipIfDepositsRestricted() public {
-        if (DepositorAllowlist.isRestricted()) {
+        if (DepositorAllowlist.allowedDepositors().length > 0) {
             vm.skip(true, "Skipping: the portal depositor allowlist rejects deposits from this contract");
         }
     }
