@@ -2638,15 +2638,14 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         }
     }
 
-    /// @notice Tests that each allowed depositor can make a deposit on a restricted chain.
+    /// @notice Tests that each allowed depositor can make a deposit on Sepolia.
     function test_depositTransaction_allowedDepositor_succeeds() external {
-        vm.chainId(1);
-        address[5] memory depositors = [
-            0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
-            0x70997970C51812dc3A010C7d01b50e0d17dc79C8,
-            0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC,
-            0x90F79bf6EB2c4f870365E785982E1f101E93b906,
-            0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65
+        vm.chainId(11155111);
+        address[4] memory depositors = [
+            0xE5327a59e33CAB54AcFFFBEba6bb167AaEDCD953,
+            0x2EA11DcDAEE45D82aAe2Ad6e7255f8d5bb70AbFF,
+            0x7d9F14FCd14fdf7A47BC2657949e087aA24f62bA,
+            0xcE38EA73Aac620E9aF3d45b53088B9E7294C5a2C
         ];
         for (uint256 i = 0; i < depositors.length; i++) {
             vm.prank(depositors[i], depositors[i]);
@@ -2672,16 +2671,25 @@ contract OptimismPortal2_DepositTransaction_Test is OptimismPortal2_TestInit {
         optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
     }
 
-    /// @notice Tests that a deposit from any other address reverts on a restricted chain.
+    /// @notice Tests that a deposit from any other address reverts on Sepolia.
     function testFuzz_depositTransaction_disallowedDepositor_reverts(address _sender) external {
+        vm.chainId(11155111);
+        vm.assume(_sender != optimismPortal2.proxyAdminOwner());
+        vm.assume(_sender != 0xE5327a59e33CAB54AcFFFBEba6bb167AaEDCD953);
+        vm.assume(_sender != 0x2EA11DcDAEE45D82aAe2Ad6e7255f8d5bb70AbFF);
+        vm.assume(_sender != 0x7d9F14FCd14fdf7A47BC2657949e087aA24f62bA);
+        vm.assume(_sender != 0xcE38EA73Aac620E9aF3d45b53088B9E7294C5a2C);
+
+        vm.prank(_sender, _sender);
+        vm.expectRevert(IOptimismPortal.OptimismPortal_DepositorNotAllowed.selector);
+        optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
+    }
+
+    /// @notice Tests that on mainnet, where the list is still empty, only the proxy admin owner
+    ///         can deposit.
+    function testFuzz_depositTransaction_mainnetDepositor_reverts(address _sender) external {
         vm.chainId(1);
         vm.assume(_sender != optimismPortal2.proxyAdminOwner());
-        vm.assume(_sender != 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
-        vm.assume(_sender != 0x70997970C51812dc3A010C7d01b50e0d17dc79C8);
-        vm.assume(_sender != 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC);
-        vm.assume(_sender != 0x90F79bf6EB2c4f870365E785982E1f101E93b906);
-        vm.assume(_sender != 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65);
-
         vm.prank(_sender, _sender);
         vm.expectRevert(IOptimismPortal.OptimismPortal_DepositorNotAllowed.selector);
         optimismPortal2.depositTransaction(address(1), 0, 100_000, false, hex"");
