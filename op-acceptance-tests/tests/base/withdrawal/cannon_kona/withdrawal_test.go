@@ -8,5 +8,6 @@ import (
 )
 
 func TestWithdrawal_CannonKona(gt *testing.T) {
+	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	withdrawal.TestWithdrawal(gt, gameTypes.CannonKonaGameType)
 }

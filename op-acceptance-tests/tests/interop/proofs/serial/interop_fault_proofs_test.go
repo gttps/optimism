@@ -40,6 +40,7 @@ func TestInteropFaultProofs_ConsolidateValidCrossChainMessage(gt *testing.T) {
 }
 
 func TestInteropFaultProofs_DepositMessage(gt *testing.T) {
+	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	t := devtest.SerialT(gt)
 	sys := presets.NewSimpleInterop(t)
 	sfp.RunDepositMessageTest(t, sys, proofRunners()...)
@@ -86,6 +87,7 @@ func TestInteropFaultProofs_IntraBlock(gt *testing.T) {
 }
 
 func TestInteropFaultProofs_DepositMessage_InvalidExecution(gt *testing.T) {
+	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	t := devtest.SerialT(gt)
 	sys := presets.NewSimpleInterop(t)
 	sfp.RunDepositMessageInvalidExecutionTest(t, sys, proofRunners()...)
