@@ -12,6 +12,7 @@ func TestSuperPermissionedWithdrawal(gt *testing.T) {
 }
 
 func TestSuperCannonKonaWithdrawal(gt *testing.T) {
+	gt.Skip("Skipping: the portal depositor allowlist rejects deposits from the devstack test accounts")
 	withdrawal.TestWithdrawal(gt, gameTypes.SuperCannonKonaGameType)
 }
 
