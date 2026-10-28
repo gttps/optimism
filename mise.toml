@@ -46,7 +46,7 @@ mold = { version = "2.41.0", os = ["linux"] }
 
 # Python dependencies
 "pipx:slither-analyzer" = "0.10.2"
-"pipx:semgrep" = "1.137.0"
+"pipx:semgrep" = "1.182.1"
 "pipx:md_toc" = "9.0.0"
 
 # Foundry dependencies
